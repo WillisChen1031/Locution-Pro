@@ -158,6 +158,9 @@ jobs:
           # Product name stays "Locution Pro"; only the published file name
           # drops the space so download URLs and CLI use need no escaping.
           assetNamePattern: "Locution.Pro_[version]_[arch][setup][ext]"
+          # Use the CLI that built v0.4.1: the bundler in @tauri-apps/cli 2.12
+          # expects RestartManager macros that the custom NSIS template lacks.
+          tauriScript: npx --yes @tauri-apps/cli@2.11.4
           # @tauri-apps/api is a minor version ahead of the tauri crate.
           args: --ignore-version-mismatches
           retryAttempts: 2
@@ -248,5 +251,6 @@ jobs:
           prerelease: ${{ needs.validate.outputs.prerelease }}
           includeUpdaterJson: false
           assetNamePattern: "Locution.Pro_[version]_[arch][setup][ext]"
+          tauriScript: npx --yes @tauri-apps/cli@2.11.4
           args: --ignore-version-mismatches
           retryAttempts: 2
