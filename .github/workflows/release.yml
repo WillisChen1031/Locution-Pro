@@ -10,6 +10,11 @@ on:
         description: Existing v-prefixed tag to build
         required: true
         type: string
+      skip_windows:
+        description: Reuse the Windows installer already in the draft release
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: release-${{ github.event.inputs.tag || github.ref }}
@@ -79,6 +84,7 @@ jobs:
   build-and-publish:
     name: Build and publish Windows installer
     needs: validate
+    if: ${{ !inputs.skip_windows }}
     runs-on: windows-2025
     timeout-minutes: 90
     environment:
@@ -169,6 +175,7 @@ jobs:
     name: Build and publish macOS app
     # Runs after Windows so both upload into the release that job created.
     needs: [validate, build-and-publish]
+    if: ${{ always() && needs.validate.result == 'success' && (needs.build-and-publish.result == 'success' || needs.build-and-publish.result == 'skipped') }}
     runs-on: macos-15
     timeout-minutes: 90
     environment:
@@ -238,6 +245,10 @@ jobs:
           unzip -oq "$dir/ffprobe.zip" -d "$dir"
           echo "LOCUTION_PRO_FFMPEG_DIR=$dir" >> "$GITHUB_ENV"
           LOCUTION_PRO_FFMPEG_DIR="$dir" npm run prepare:ffmpeg
+      # tauri-build checks bundle resources while compiling, before the
+      # beforeBundleCommand would download the ONNX Runtime dylib.
+      - name: Prepare ONNX Runtime and TransNetV2 assets
+        run: npm run prepare:transnetv2
       - name: Build and publish release
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # action-v0.6.2
         env:
