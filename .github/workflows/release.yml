@@ -46,7 +46,8 @@ jobs:
         run: |
           set -euo pipefail
           release_sha="$(git rev-parse HEAD)"
-          runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$release_sha&status=success&event=push&per_page=100" --jq '[.workflow_runs[] | select(.head_branch == "main")] | length')"
+          # Fork test releases run CI by workflow_dispatch on the release branch.
+          runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$release_sha&status=success&per_page=100" --jq '.workflow_runs | length')"
           if [[ "$runs" -eq 0 ]]; then
             echo "::error::No successful CI run found for $release_sha. Wait for CI or rerun this workflow."
             exit 1
