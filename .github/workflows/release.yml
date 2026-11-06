@@ -65,7 +65,9 @@ jobs:
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
           export GITHUB_REF_TYPE=tag
-          export GITHUB_REF_NAME="$RELEASE_TAG"
+          # Fork prereleases (v0.4.1-macos.6) keep the upstream app version;
+          # only the tag carries the fork suffix.
+          export GITHUB_REF_NAME="${RELEASE_TAG%%-*}"
           npm run check:versions
           echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           if [[ "$RELEASE_TAG" == *-* ]]; then
